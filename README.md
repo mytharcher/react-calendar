@@ -4,7 +4,7 @@ React Calendar
 Usage
 ----------
 
-~~~javascript
+~~~jsx
 import { MonthView } from '@mytharcher/react-calendar';
 
 class YourComponent extends React.Component {
@@ -14,6 +14,7 @@ class YourComponent extends React.Component {
         year={2019}
         month={9}
         DateRenderer={date => date.getDate()}
+      >
     );
   }
 }
