@@ -6,6 +6,8 @@ function formatDate(date) {
 }
 
 export default class extends React.Component {
+  static DEFAULT_WEEKDAY_STARTS_WITH = 0;
+
   // 每个日期单元格的
   static dayDecorators = {
     weekday(date) {
@@ -67,6 +69,31 @@ export default class extends React.Component {
     }
   };
 
+  static getGridStart(year, month, weekdayStartsWith = this.DEFAULT_WEEKDAY_STARTS_WITH) {
+    // 取当月 1 日作为起点
+    const start = new Date(year, month, 1);
+    // 补全按周计算的起点
+    start.setDate((start.getDate() - start.getDay()) + weekdayStartsWith);
+    // 取得 4 周后的日期
+    const fourWeeks = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 28);
+    // 如果 4 周以后已经是下一个月（只有 28 天的 2 月）
+    if (fourWeeks.getMonth() > month) {
+      // 起点再往前推一周
+      start.setDate(start.getDate() - 7);
+    }
+
+    return start;
+  }
+
+  static getGridEnd(year, month, weekdayStartsWith = this.DEFAULT_WEEKDAY_STARTS_WITH) {
+    // 取当月 1 日作为起点
+    const start = this.getGridStart(year, month, weekdayStartsWith);
+
+    start.setDate(start.getDate() + (7 * 6));
+
+    return start;
+  }
+
   static Header({ day }) {
     return day;
   }
@@ -78,20 +105,6 @@ export default class extends React.Component {
   }
 
   tableNode = React.createRef();
-
-  getDecoratorClasses(date, params) {
-    const { dayDecorators = {} } = this.props;
-    const decorators = { ...this.constructor.dayDecorators, ...dayDecorators };
-    return Object.keys(decorators)
-      .map((fn) => {
-        const result = decorators[fn](date, params);
-        return typeof result === 'string'
-          ? result
-          : result && fn.replace(/([A-Z]+)/g, (matcher, search) => `-${search.toLowerCase()}`);
-      })
-      .filter(item => Boolean(item))
-      .join(' ');
-  }
 
   onClick = (ev) => {
     const { onDateClick, onDayClick } = this.props;
@@ -110,6 +123,20 @@ export default class extends React.Component {
     }
   };
 
+  getDecoratorClasses(date, params) {
+    const { dayDecorators = {} } = this.props;
+    const decorators = { ...this.constructor.dayDecorators, ...dayDecorators };
+    return Object.keys(decorators)
+      .map((fn) => {
+        const result = decorators[fn](date, params);
+        return typeof result === 'string'
+          ? result
+          : result && fn.replace(/([A-Z]+)/g, (matcher, search) => `-${search.toLowerCase()}`);
+      })
+      .filter(item => Boolean(item))
+      .join(' ');
+  }
+
   render() {
     const today = new Date();
     const {
@@ -118,7 +145,7 @@ export default class extends React.Component {
       // 月历月份
       month = today.getMonth(),
       // 每周起始日，默认从周日开始
-      weekdayStartsWith = 0,
+      weekdayStartsWith = this.constructor.DEFAULT_WEEKDAY_STARTS_WITH,
       HeaderRenderer = this.constructor.Header,
       // 每个日期单元格的渲染组件
       DateRenderer = this.constructor.Day,
@@ -128,17 +155,7 @@ export default class extends React.Component {
 
     const weekdays = Array(7).fill(null).map((item, i) => (weekdayStartsWith + i) % 7);
 
-    // 取当月 1 日作为起点
-    const start = new Date(year, month, 1);
-    // 补全按周计算的起点
-    start.setDate(start.getDate() - start.getDay() + weekdayStartsWith);
-    // 取得 4 周后的日期
-    const fourWeeks = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 28);
-    // 如果 4 周以后已经是下一个月（只有 28 天的 2 月）
-    if (fourWeeks.getMonth() > month) {
-      // 起点再往前推一周
-      start.setDate(start.getDate() - 7);
-    }
+    const start = this.constructor.getGridStart(year, month, weekdayStartsWith);
 
     return (
       <table
@@ -168,7 +185,7 @@ export default class extends React.Component {
                 const date = new Date(
                   start.getFullYear(),
                   start.getMonth(),
-                  start.getDate() + week * 7 + day
+                  start.getDate() + (week * 7) + day
                 );
 
                 return (

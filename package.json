@@ -1,6 +1,6 @@
 {
   "name": "@mytharcher/react-calendar",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Fully configurable calendar components for React",
   "main": "index.js",
   "scripts": {
