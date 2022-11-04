@@ -73,7 +73,7 @@ export default class extends React.Component {
     // 取当月 1 日作为起点
     const start = new Date(year, month, 1);
     // 补全按周计算的起点
-    start.setDate((start.getDate() - start.getDay()) + weekdayStartsWith);
+    start.setDate((start.getDate() - (start.getDay() || 7)) + weekdayStartsWith);
     // 取得 4 周后的日期
     const fourWeeks = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 28);
     // 如果 4 周以后已经是下一个月（只有 28 天的 2 月）
@@ -188,13 +188,15 @@ export default class extends React.Component {
                   start.getDate() + (week * 7) + day
                 );
 
+                const dateStr = formatDate(date);
+
                 return (
                   <td
-                    key={date}
+                    key={dateStr}
                     className={this.getDecoratorClasses(date, { year, month, today })}
-                    data-date={formatDate(date)}
+                    data-date={dateStr}
                   >
-                    <DateRenderer year={year} month={month} date={date} />
+                    <DateRenderer year={year} month={month} date={date} index={day} />
                   </td>
                 );
               })}
